@@ -1,0 +1,147 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-task
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: revision
+      description: the revision
+      default: master
+    - name: apikey
+      description: the ibmcloud api key
+    - name: api
+      description: the ibmcloud api endpoint
+      default: "https://cloud.ibm.com"
+    - name: registryNamespace
+      description: the ibmcloud registry namespace
+    - name: imageName
+      description: the base image name
+      default: "hello-containers-tekton"
+    - name: registryRegion
+      description: the ibmcloud registry region
+  workspaces:
+  - name: task-pvc
+    mountPath: /artifacts   
+  steps:
+    - name: download-reference-files-content
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'download-reference-files-content'
+    - name: analyze-ref-files
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'analyze-ref-files'
+      volumeMounts:
+        - mountPath: /whc-commons/
+          name: whc-commons
+    - name: upload-archive-with-encrypted-reference-file
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'upload-archive-with-encrypted-reference-files'
+      volumeMounts:
+        - mountPath: /whc-commons/
+          name: whc-commons
+    - name: create-image-and-upload-to-cloud
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'create-image-and-upload-to-cloud'
+      volumeMounts:
+        - mountPath: /whc-commons/
+          name: whc-commons
+    - name: update-umbrella
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'update-umbrella'
+      volumeMounts:
+        - mountPath: /whc-commons/
+          name: whc-commons
+    - name: deployment
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'deployment'
+      volumeMounts:
+        - mountPath: /whc-commons/
+          name: whc-commons
+    - name: upload-image-to-artifactory
+      image: ubuntu
+      # Make all environment properties from delivery pipeline availble to the step
+      envFrom:
+        - configMapRef:
+            name: environment-properties
+        - secretRef:
+            name: secure-properties
+      command:
+        - bash
+      args:
+        - -cxe
+        - |
+          echo 'upload-image-to-artidactory'
+      volumeMounts:
+        - mountPath: /whc-commons/
+          name: whc-commons
+  volumes:
+    - name: whc-commons
+      emptyDir: {}
+
